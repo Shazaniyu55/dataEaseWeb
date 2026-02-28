@@ -1,6 +1,5 @@
 // ignore_for_file: file_names, library_prefixes, deprecated_member_use
 import 'package:dataapp/constant/colors.dart';
-import 'package:dataapp/model/walletBalace.dart';
 import 'package:dataapp/services/tokenServie.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,8 +28,10 @@ class AppController extends GetxController {
   var changePassLoader = false.obs;
   var createNewWalletLoader = false.obs;
   var importWalletLoader = false.obs;
-
-  var userBalance = WalletBalanceModel().obs;
+  var userName = ''.obs;
+  var email = ''.obs;
+  var img = ''.obs;
+  var userBalance = <String, dynamic>{}.obs;
   var password = ''.obs;
 
   var getSwapTransactionsLoader = false.obs;

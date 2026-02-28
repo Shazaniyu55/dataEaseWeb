@@ -1,8 +1,6 @@
 // ignore_for_file: non_constant_identifier_names, sort_child_properties_last
 
-import 'package:dataapp/screens/chat.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class ListOfVendors extends StatefulWidget {
   const ListOfVendors({super.key});
@@ -50,12 +48,12 @@ class _ListOfVendorsState extends State<ListOfVendors> {
     return GestureDetector(
       onTap: () {
         // Handle onTap action here
-        Get.to(MyChatApp(
-          userId: id,
-          name: name,
-          img: imageUrl,
-          isOnline: isOnline,
-        ));
+        // Get.to(MyChatApp(
+        //   userId: id,
+        //   name: name,
+        //   img: imageUrl,
+        //   isOnline: isOnline,
+        // ));
       },
       child: Container(
         padding:

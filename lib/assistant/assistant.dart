@@ -1,8 +1,11 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'package:dataapp/screens/login.dart';
 import 'package:dataapp/services/tokenServie.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RequestAssistant {
   /// Generic request handler
@@ -84,12 +87,8 @@ class RequestAssistant {
       sendRequest(url, method: "DELETE", headers: headers);
 }
 
-
-
-
 class VtuApi {
-
-  final String baseUrl = "https://vtu.ng/wp-json";
+  final String baseUrl = "https://dataease-backend.vercel.app";
 
   VtuApi();
 
@@ -117,10 +116,9 @@ class VtuApi {
     }
   }
 
-/// LOGIN - Get JWT Token
-  Future<String> login(String username, String password) async {
-    final TokenService tokenService = TokenService();
-    final url = Uri.parse("$baseUrl/jwt-auth/v1/token");
+  /// LOGIN - Get JWT Token
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    final url = Uri.parse("$baseUrl/api/v2/auth/login");
 
     final response = await http.post(
       url,
@@ -128,21 +126,82 @@ class VtuApi {
         "Content-Type": "application/json",
       },
       body: jsonEncode({
-        "username": username,
+        "email": email,
         "password": password,
       }),
     );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      await tokenService.saveToken(data["token"]); // Save token securely  
-      print("Login successful. Token: ${data["token"]}");
-      return data["token"];
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data["success"] == true) {
+      print("Login successful. Data: $data");
+
+      return data["data"];
     } else {
-      throw Exception("Login failed: ${response.body}");
+      throw Exception(data["message"] ?? "Login failed");
+    }
+  }
+
+  /// GET USER PROFILE
+  Future<Map<String, dynamic>> getUserProfile(
+    String token,
+    String userId,
+  ) async {
+    final url = Uri.parse("$baseUrl/api/v2/auth/profile");
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({
+        "userId": userId,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data["success"] == true) {
+      return data["data"];
+    } else {
+      throw Exception(data["message"] ?? "Failed to fetch profile");
     }
   }
 
 
-}
+    /// GET USER Transactions
+  Future<Map<String, dynamic>> getUserTransactions(
+    String token,
+    String userId,
+  ) async {
+    final url = Uri.parse("$baseUrl/api/v2/wallet/transactions");
 
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({
+        "userId": userId,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data["success"] == true) {
+      return data["data"];
+    } else {
+      throw Exception(data["message"] ?? "Failed to fetch profile");
+    }
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    //Get.offAllNamed("/login");
+    Get.to(const LoginScreen());
+  }
+}

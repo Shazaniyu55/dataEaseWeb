@@ -1,13 +1,79 @@
+import 'package:dataapp/assistant/assistant.dart';
+import 'package:dataapp/controller/appController.dart';
+import 'package:dataapp/model/walletBalace.dart';
+import 'package:dataapp/services/tokenServie.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  // ignore: use_super_parameters
+  const Profile({Key? key}) : super(key: key);
 
   @override
   State<Profile> createState() => _ProfileState();
 }
 
+
+
+
+
 class _ProfileState extends State<Profile> {
+
+    late TokenService tokenService;
+  int currentMax = 1;
+  AppController appController = Get.find<AppController>();
+  var selectedCoinToBalanceModel = Balance().obs;
+  var selectCoin = 0.obs;
+  double walletBalance = 0.0;
+  late VtuApi vtuApi;
+
+
+  Future<void> _initializeDashboard() async {
+  try {
+    final token = await tokenService.getToken();
+    final userId = await tokenService.getUserId();
+
+    if (token == null || userId == null) {
+      return;
+    }
+
+    await _loadUserProfile(token, userId);
+
+  // ignore: empty_catches
+  } catch (e) {
+  }
+}
+
+
+Future<void> _loadUserProfile(String token, String userId) async {
+  try {
+    final profile = await vtuApi.getUserProfile(token, userId);
+
+
+    setState(() {
+      // Example
+      appController.userName.value = profile["fullName"];
+      appController.email.value = profile["email"];
+      appController.img.value = profile["profilePic"] ?? '';
+    });
+
+  // ignore: empty_catches
+  } catch (e) {
+  }
+}
+
+
+   @override
+  void initState() {
+    super.initState();
+    tokenService = TokenService();
+    vtuApi = VtuApi();
+    _initializeDashboard();
+    
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,10 +88,12 @@ class _ProfileState extends State<Profile> {
                 children: [
                   Container(
                     margin: const EdgeInsets.all(10.0),
-                    child: const CircleAvatar(
+                    child:  CircleAvatar(
                       radius: 50,
                       backgroundImage: NetworkImage(
-                          "https://res.cloudinary.com/damufjozr/image/upload/v1717407985/niyu_icuuru.jpg"),
+                           appController.img.value.isNotEmpty
+                              ? appController.img.value
+                              : "https://www.pngall.com/wp-content/uploads/5/Profile-PNG-High-Quality-Image.png",),
                     ),
                   ),
                   Expanded(
@@ -83,14 +151,14 @@ class _ProfileState extends State<Profile> {
                         const SizedBox(
                           height: 10,
                         ),
-                        const Text(
-                          'Name: ${'Shazaniyu Gbadamosi'}',
+                         Obx(()=> Text(
+                          'Full Name: ${appController.userName.value}',)
                         ),
                         const SizedBox(
                           height: 10,
                         ),
-                        const Text(
-                          'Email: ${'Shazaniyu@gmail.com'}',
+                         Obx(()=> Text(
+                          'Email: ${appController.email.value}',)
                         ),
                       ],
                     ),
